@@ -8,6 +8,10 @@ services:
       - "8222:8222"
 
 
+
+# =========================
+# Client Gateway (client-gateway)
+# =========================
   client-gateway:
     build: ./client-gateway
     ports:
@@ -22,6 +26,9 @@ services:
     depends_on:
       - nats-server
 
+# =========================
+# Products MS (product-ms)
+# =========================
   products-ms:
     build: ./product-ms
     ports:
@@ -37,7 +44,10 @@ services:
     depends_on:
       - nats-server
 
-  # Orders MS
+
+# =========================
+# Orders MS (order-ms)
+# =========================
   order-ms:
     build: ./order-ms
     ports:
@@ -54,7 +64,7 @@ services:
       - orders-db
       - nats-server
 
-  # # Orders DB
+# Orders DB
   orders-db:
     container_name: orders_database
     image: postgres:16.2
@@ -67,4 +77,25 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123456
       - POSTGRES_DB=ordersdb
-  
+
+# =========================
+# Payments (payments-ms)
+# =========================
+
+  payment-ms:
+    build: ./payment-ms
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./payment-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - STRIPE_SECRET=sk_test_51UZ0IQJCqIrd0sBsCOg9a0XkLdshHEtmKGpXHtoTroTZnRdikc6hNtM49wkBN8ysXOZz4P2rzAwtAwp8z2RB3JJT00aM2p1W4J
+      - STRIPE_WEBHOOK_SECRET=whsec_BXYe2nOvn2JmPXe8msW7f5E8NiYgKZeV
+      - STRIPE_SUCCESS_URL=http://localhost:3000/payment/success
+      - STRIPE_CANCEL_URL=http://localhost:3000/payment/cancel
+      - NATS_SERVERS=nats://nats-server:4222
+    depends_on:
+      - nats-server
