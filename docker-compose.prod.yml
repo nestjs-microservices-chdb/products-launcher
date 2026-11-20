@@ -1,0 +1,98 @@
+services:
+
+  nats-server:
+    image: nats:latest
+    ports:
+      - "8222:8222"
+
+
+# =========================
+# Client Gateway (client-gateway)
+# =========================
+  client-gateway:
+    build:
+      context: ./client-gateway
+      dockerfile: dockerfile.prod
+    image: client-gateway-prod
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}
+    # volumes:
+    #   - ./client-gateway/src:/usr/src/app/src
+    # command: npm run start:dev
+    environment:
+      - NODE_ENV=development
+      - PORT=${CLIENT_GATEWAY_PORT}
+      - NATS_SERVERS=${NATS_SERVERS}
+    # depends_on:
+    #   - nats-server
+
+# =========================
+# Products MS (product-ms)
+# =========================
+  products-ms:
+    build:
+      context: ./product-ms
+      dockerfile: dockerfile.prod
+      args:
+        - PRODUCT_DATABASE_URL=file:/usr/src/app/dev.db
+    image: products-ms
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - NATS_SERVERS=${NATS_SERVERS}
+      - DATABASE_URL=file:/usr/src/app/dev.db
+
+
+# =========================
+# Orders MS (order-ms)
+# =========================
+  order-ms:
+    build:
+      context: ./order-ms
+      dockerfile: dockerfile.prod
+      args:
+        - ORDERS_DATABASE_URL=${ORDERS_DATABASE_URL}
+    image: order-ms
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DATABASE_URL=${ORDERS_DATABASE_URL}
+      - NATS_SERVERS=${NATS_SERVERS}
+
+# =========================
+# Payments (payments-ms)
+# =========================
+
+  payment-ms:
+    build:
+      context: ./payment-ms
+      dockerfile: dockerfile.prod
+    image: payment-ms
+    ports:
+      - ${PAYMENTS_PORT}:${PAYMENTS_PORT}
+    environment:
+      - NODE_ENV=development
+      - PORT=${PAYMENTS_PORT}
+      - STRIPE_SECRET=${STRIPE_SECRET}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
+      - NATS_SERVERS=${NATS_SERVERS}
+
+# =========================
+# Authentication (auth-ms)
+# =========================
+
+  auth-ms:
+    build:
+      context: ./auth-ms
+      dockerfile: dockerfile.prod
+      args:
+        - AUTH_DATABASE_URL_ARG=${AUTH_MS_DB_URL}
+    image: auth-ms
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - NATS_SERVERS=${NATS_SERVERS}
+      - AUTH_MS_DB_URL=${AUTH_MS_DB_URL}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
