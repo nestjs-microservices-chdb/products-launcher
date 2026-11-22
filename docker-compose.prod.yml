@@ -1,10 +1,5 @@
 services:
 
-  nats-server:
-    image: nats:latest
-    ports:
-      - "8222:8222"
-
 
 # =========================
 # Client Gateway (client-gateway)
@@ -13,7 +8,7 @@ services:
     build:
       context: ./client-gateway
       dockerfile: dockerfile.prod
-    image: client-gateway-prod
+    image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/client-gateway
     ports:
       - ${CLIENT_GATEWAY_PORT}:${CLIENT_GATEWAY_PORT}
     # volumes:
@@ -35,7 +30,7 @@ services:
       dockerfile: dockerfile.prod
       args:
         - PRODUCT_DATABASE_URL=file:/usr/src/app/dev.db
-    image: products-ms
+    image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/products-ms
     environment:
       - NODE_ENV=development
       - PORT=3001
@@ -52,7 +47,7 @@ services:
       dockerfile: dockerfile.prod
       args:
         - ORDERS_DATABASE_URL=${ORDERS_DATABASE_URL}
-    image: order-ms
+    image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/order-ms
     environment:
       - NODE_ENV=development
       - PORT=3002
@@ -67,7 +62,7 @@ services:
     build:
       context: ./payment-ms
       dockerfile: dockerfile.prod
-    image: payment-ms
+    image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/payment-ms
     ports:
       - ${PAYMENTS_PORT}:${PAYMENTS_PORT}
     environment:
@@ -89,7 +84,7 @@ services:
       dockerfile: dockerfile.prod
       args:
         - AUTH_DATABASE_URL_ARG=${AUTH_MS_DB_URL}
-    image: auth-ms
+    image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/auth-ms
     environment:
       - NODE_ENV=development
       - PORT=3004
