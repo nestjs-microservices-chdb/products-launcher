@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: orders-ms
+  name: orders-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-ms
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: orders-ms
+    spec:
+      containers:
+        - image: southamerica-east1-docker.pkg.dev/tienda-microservices-515422/image-registry/order-ms
+          name: order-ms
+          env:
+            - name: PORT
+              value: "3000"
+            - name: NATS_SERVERS
+              value: "nats://nats"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: orders-secrets
+                  key: database_url
+          resources: {}
+status: {}
